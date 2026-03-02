@@ -46,6 +46,22 @@ class AuthController extends Controller
         return response(['user' => $user, 'token' => $token], 200);
     }
 
+        /**
+     * @OA\Post(
+     * path="/login",
+     * summary="Inicio de sesión de usuario",
+     * tags={"Autenticación"},
+     * @OA\RequestBody(
+     * @OA\JsonContent(
+     * @OA\Property(property="email", type="string", example="test@agenda.com"),
+     * @OA\Property(property="password", type="string", example="password")
+     * )
+     * ),
+     * @OA\Response(response=200, description="Login exitoso"),
+     * @OA\Response(response=401, description="Credenciales inválidas")
+     * )
+     */
+
     public function logout() {
         auth()->user()->tokens()->delete();
         return ['message' => 'Sesión cerrada'];

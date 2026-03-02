@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Forzamos el registro del proveedor de Swagger
+        if ($this->app->environment('local')) {
+            
+        }
     }
 
     /**
