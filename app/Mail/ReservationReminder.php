@@ -9,17 +9,17 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ReservationConfirmed extends Mailable
+class ReservationReminder extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
-     * Definimos la propiedad pública para que esté disponible en la vista.
+     * Propiedad pública para que Blade la reconozca automáticamente.
      */
     public $reservation;
 
     /**
-     * El constructor ahora recibe la instancia de la reserva.
+     * El constructor recibe la reserva que se va a recordar.
      */
     public function __construct(Reservation $reservation)
     {
@@ -27,22 +27,22 @@ class ReservationConfirmed extends Mailable
     }
 
     /**
-     * Configuramos el asunto del correo.
+     * Definimos el asunto del correo.
      */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Confirmación de Reserva - ' . $this->reservation->titulo,
+            subject: '⏰ Recordatorio de tu reserva: ' . $this->reservation->titulo,
         );
     }
 
     /**
-     * Definimos la vista y pasamos los datos.
+     * Vinculamos con la vista que creamos anteriormente.
      */
     public function content(): Content
     {
         return new Content(
-            view: 'emails.reservation_confirmed',
+            view: 'emails.reminder',
         );
     }
 

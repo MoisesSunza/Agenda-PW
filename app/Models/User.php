@@ -40,8 +40,8 @@ class User extends Authenticatable
         return $this->hasMany(Reservation::class); 
     }
 
-    public function notifications() { 
-        return $this->hasMany(Notification::class); 
+    public function notifications() {
+        return $this->hasMany(\App\Models\Notification::class);
     }
 
     /**
