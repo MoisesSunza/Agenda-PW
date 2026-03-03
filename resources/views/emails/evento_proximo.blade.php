@@ -16,20 +16,18 @@
 
 <body>
     <div class="container">
-        <div class="header"><h1>MiAgenda</h1></div>
+        <div class="header"><h1>¡Atención!</h1></div>
         <div class="content">
-            <p>Hola, <strong>{{ auth()->user()->name }}</strong>.</p>
-            <p>Has registrado un nuevo contacto exitosamente en tu libreta:</p>
+            <p>Tu próximo evento está por comenzar en <span style="color:#c8a96e">10 minutos</span>:</p>
             <div class="highlight">
-                <strong>Nombre:</strong> {{ $contacto->nombre }}<br>
-                <strong>Correo:</strong> {{ $contacto->correo }}<br>
-                <strong>Teléfono:</strong> {{ $contacto->telefono ?? 'No registrado' }}
+                <strong>Actividad:</strong> {{ $evento->titulo }}<br>
+                <strong>Inicio:</strong> {{ $evento->hora }}
             </div>
+            <p>Te recomendamos prepararte para iniciar a tiempo.</p>
         </div>
         <div class="footer">
             Desarrollado por:
             <div class="dev-team">Moisés Abraham Sunza Vázquez & Fernando Adriano Sabido Quijano</div>
-            Ingeniería de Software - UAC
         </div>
     </div>
 </body>

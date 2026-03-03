@@ -18,18 +18,15 @@
     <div class="container">
         <div class="header"><h1>MiAgenda</h1></div>
         <div class="content">
-            <p>Hola, <strong>{{ auth()->user()->name }}</strong>.</p>
-            <p>Has registrado un nuevo contacto exitosamente en tu libreta:</p>
+            <p>Se han realizado modificaciones en tu evento programado:</p>
             <div class="highlight">
-                <strong>Nombre:</strong> {{ $contacto->nombre }}<br>
-                <strong>Correo:</strong> {{ $contacto->correo }}<br>
-                <strong>Teléfono:</strong> {{ $contacto->telefono ?? 'No registrado' }}
+                <strong>Evento:</strong> {{ $evento->titulo }}<br>
+                <strong>Estado:</strong> Los nuevos detalles han sido guardados en tu calendario.
             </div>
         </div>
         <div class="footer">
             Desarrollado por:
             <div class="dev-team">Moisés Abraham Sunza Vázquez & Fernando Adriano Sabido Quijano</div>
-            Ingeniería de Software - UAC
         </div>
     </div>
 </body>

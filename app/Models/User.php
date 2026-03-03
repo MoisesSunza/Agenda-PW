@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens; // Importante para la autenticación de la API
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -32,12 +33,23 @@ class User extends Authenticatable
     /**
      * Relaciones del usuario con otras tablas.
      */
-    public function contacts() { 
-        return $this->hasMany(Contact::class); 
-    }
-
     public function notifications() {
         return $this->hasMany(\App\Models\Notification::class);
+    }
+
+    
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
+    }
+
+    /**
+     * Relación: Un usuario tiene muchos contactos.
+     * (Asegúrate de tener esta también para que funcione contacts.js)
+     */
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class);
     }
 
     /**

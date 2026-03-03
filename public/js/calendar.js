@@ -1,10 +1,10 @@
 /**
- * calendar.js - Versión con Modal de Confirmación y Notificaciones
+ * calendar.js - Versión Final Sincronizada con Notificaciones
  */
 
 var calendarioInstancia = null;
-window.listaEventos = []; 
-let idEventoAEliminar = null; // Variable puente para el modal de confirmación
+window.listaEventos = []; // Global para el sistema de recordatorios
+let idEventoAEliminar = null; 
 
 /* ─────────────────────────────────────────────────
    INICIALIZAR CALENDARIO
@@ -31,10 +31,14 @@ function inicializarCalendario() {
     events: function(fetchInfo, successCallback, failureCallback) {
       http.get('/events')
         .then(function(respuesta) {
-          var eventos = respuesta.data || respuesta;
-          window.listaEventos = eventos; //
+          // Extracción segura de datos para Laravel API
+          let datos = respuesta.data ? respuesta.data : respuesta;
+          if (datos && datos.data) datos = datos.data;
+          
+          const eventosArr = Array.isArray(datos) ? datos : [];
+          window.listaEventos = eventosArr; // Compartir con notifications.js
 
-          var eventosFormateados = eventos.map(function(e) {
+          var eventosFormateados = eventosArr.map(function(e) {
             let fechaInicioExacta = e.fecha_inicio || e.start;
             if (e.hora) {
                 fechaInicioExacta = `${fechaInicioExacta}T${e.hora}`;
@@ -59,23 +63,13 @@ function inicializarCalendario() {
     },
 
     dateClick: function(info) {
-      let fechaSeleccionada = '';
-      let horaSeleccionada = '';
-
-      if (info.allDay) {
-          fechaSeleccionada = info.dateStr;
-      } else {
-          let partes = info.dateStr.split('T');
-          fechaSeleccionada = partes[0];
-          horaSeleccionada = partes[1].substring(0, 5);
-      }
+      let fechaSeleccionada = info.allDay ? info.dateStr : info.dateStr.split('T')[0];
+      let horaSeleccionada = info.allDay ? '' : info.dateStr.split('T')[1].substring(0, 5);
       abrirModalEvento(fechaSeleccionada, horaSeleccionada);
     },
 
     eventClick: function(info) {
-      var evento = window.listaEventos.find(function(e) {
-        return String(e.id) === String(info.event.id);
-      });
+      var evento = window.listaEventos.find(e => String(e.id) === String(info.event.id));
       if (evento) abrirModalEditarEvento(evento);
     },
 
@@ -85,9 +79,7 @@ function inicializarCalendario() {
 
   calendarioInstancia.render();
 
-  setTimeout(function() {
-    calendarioInstancia.updateSize();
-  }, 100);
+  setTimeout(() => calendarioInstancia.updateSize(), 100);
 }
 
 function cargarEventos() {
@@ -126,16 +118,13 @@ function cerrarModalEvento() {
   document.getElementById('modal-evento-overlay').classList.remove('active');
 }
 
-/* ─────────────────────────────────────────────────
-   LÓGICA DE CONFIRMACIÓN DE ELIMINACIÓN
-───────────────────────────────────────────────── */
 function cerrarModalConfirmarEvento() {
     idEventoAEliminar = null;
     document.getElementById('modal-confirmar-evento-overlay').classList.remove('active');
 }
 
 /* ─────────────────────────────────────────────────
-   GUARDAR / ELIMINAR
+   GUARDAR / ELIMINAR (CON DISPARADOR DE NOTIF)
 ───────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('form-evento');
@@ -159,20 +148,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     try {
-      if (id) {
-        await http.put('/events/' + id, datos);
-      } else {
-        await http.post('/events', datos);
-      }
+      if (id) { await http.put('/events/' + id, datos); } 
+      else { await http.post('/events', datos); }
+      
       cerrarModalEvento();
       cargarEventos();
-      if (typeof cargarNotificaciones === 'function') cargarNotificaciones();
+
+      // ACTUALIZACIÓN: Refrescar campana inmediatamente
+      if (typeof cargarNotificaciones === 'function') {
+          cargarNotificaciones();
+      }
     } catch (error) {
       mostrarAlertaEvento(error.message);
     }
   });
 
-  // 1. Abrir el modal de confirmación
   document.getElementById('btn-eliminar-evento').addEventListener('click', function() {
     idEventoAEliminar = document.getElementById('evento-id').value;
     if (idEventoAEliminar) {
@@ -180,18 +170,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // 2. Ejecutar la eliminación real tras confirmar
   const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar-evento');
   if (btnConfirmarEliminar) {
     btnConfirmarEliminar.addEventListener('click', async function() {
         if (!idEventoAEliminar) return;
-
         try {
             await http.delete('/events/' + idEventoAEliminar);
             cerrarModalConfirmarEvento();
             cerrarModalEvento();
             cargarEventos();
-            if (typeof cargarNotificaciones === 'function') cargarNotificaciones();
+            // ACTUALIZACIÓN: Refrescar campana tras borrar
+            if (typeof cargarNotificaciones === 'function') {
+                cargarNotificaciones();
+            }
         } catch (error) {
             mostrarAlertaEvento(error.message);
             cerrarModalConfirmarEvento();
@@ -202,12 +193,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function mostrarAlertaEvento(msg) {
   var el = document.getElementById('modal-evento-alert');
-  el.textContent = msg;
-  el.className = 'alert error visible';
+  if(el) {
+    el.textContent = msg;
+    el.className = 'alert error visible';
+  }
 }
 
 function ocultarAlertaEvento() {
-  document.getElementById('modal-evento-alert').className = 'alert';
+  var el = document.getElementById('modal-evento-alert');
+  if(el) el.className = 'alert';
 }
 
 function filtrarPorFecha(fecha) {

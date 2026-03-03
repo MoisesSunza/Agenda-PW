@@ -3,49 +3,33 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Notification;
+use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    /**
-     * Listar todas las notificaciones del usuario logueado.
-     * Requerimiento: Mostrar alertas al iniciar sesión.
-     */
+    // Carga las notificaciones del usuario logueado
     public function index()
     {
-        $notifications = auth()->user()->notifications()
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json($notifications, 200);
+        $notifications = auth()->user()->notifications()->latest()->get();
+        return response()->json(['data' => $notifications]);
     }
 
-    /**
-     * Marcar una notificación específica como leída.
-     * Ruta: PUT /api/notifications/{id}/read
-     */
+    // Marca como leída (Botón ✔)
     public function markAsRead($id)
     {
-        // Buscamos la notificación asegurándonos que le pertenezca al usuario
         $notification = auth()->user()->notifications()->findOrFail($id);
-        
-        $notification->update(['leido' => true]);
+        $notification->update(['leida' => true]);
 
-        return response()->json([
-            'message' => 'Notificación marcada como leída',
-            'notification' => $notification
-        ], 200);
+        return response()->json(['message' => 'Notificación leída']);
     }
 
-    /**
-     * Eliminar una notificación (opcional, para limpiar el historial).
-     */
+    // Elimina la notificación (Botón ✖)
     public function destroy($id)
     {
         $notification = auth()->user()->notifications()->findOrFail($id);
         $notification->delete();
 
-        return response()->json(['message' => 'Notificación eliminada'], 200);
+        return response()->json(['message' => 'Notificación eliminada']);
     }
 }
