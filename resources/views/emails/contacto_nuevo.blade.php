@@ -29,7 +29,6 @@
         <div class="footer">
             Desarrollado por:
             <div class="dev-team">Moisés Abraham Sunza Vázquez & Fernando Adriano Sabido Quijano</div>
-            Ingeniería de Software - UAC
         </div>
     </div>
 </body>
