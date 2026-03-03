@@ -1,172 +1,176 @@
 /**
- * notifications.js - Versión Final Sincronizada
- * Módulo de notificaciones para Laravel 12.
- * Requiere: auth.js (para el objeto http).
+ * notifications.js - Versión Final con Recordatorios de 10 min
  */
 
-/* ─────────────────────────────────────────────────
-   VARIABLE GLOBAL
-───────────────────────────────────────────────── */
-var listaNotificaciones = [];
+let listaNotificaciones = [];
+let recordatoriosVistos = new Set(); // Evita repetir el mismo aviso
 
-/* ─────────────────────────────────────────────────
-   CARGAR NOTIFICACIONES
-───────────────────────────────────────────────── */
-async function cargarNotificaciones() {
-  try {
-    // Sincronizado con la ruta /api/notifications que documentamos en Swagger
-    var respuesta = await http.get('/notifications');
-    listaNotificaciones = respuesta.data || respuesta;
+document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('jwt_token')) {
+        cargarNotificaciones();
+    }
 
-    actualizarBadge();
-    renderizarDropdown();
+    const btnCampana = document.getElementById('btn-campana'); 
+    const panelNotif = document.getElementById('notif-panel'); 
 
-  } catch (error) {
-    console.error('Error cargando notificaciones:', error);
-  }
-}
-
-/* ─────────────────────────────────────────────────
-   ACTUALIZAR BADGE (CONTADOR ROJO)
-───────────────────────────────────────────────── */
-function actualizarBadge() {
-  // Filtramos las que no han sido leídas
-  var noLeidas = listaNotificaciones.filter(function(n) {
-    return !n.leida && !n.read; // Soporta ambos formatos de campo
-  });
-
-  var badge = document.getElementById('notif-badge');
-
-  if (noLeidas.length > 0) {
-    badge.textContent = noLeidas.length > 9 ? '9+' : noLeidas.length;
-    badge.style.display = 'flex';
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-/* ─────────────────────────────────────────────────
-   RENDERIZAR PANEL DESPLEGABLE
-───────────────────────────────────────────────── */
-function renderizarDropdown() {
-  var lista = document.getElementById('notif-lista');
-
-  if (listaNotificaciones.length === 0) {
-    lista.innerHTML = '<p class="notif-empty">No tienes notificaciones.</p>';
-    return;
-  }
-
-  var html = '';
-  listaNotificaciones.forEach(function(notif) {
-    var leida = notif.leida || notif.read || false;
-    var mensaje = notif.mensaje || notif.message || '';
-    var fecha = notif.fecha || notif.created_at || '';
-
-    html += `
-      <div class="notif-item ${leida ? 'leida' : ''}" id="notif-item-${notif.id}">
-        <div class="notif-contenido">
-          <p class="notif-mensaje">${escaparHTMLNotif(mensaje)}</p>
-          ${fecha ? `<span class="notif-fecha">${formatearFecha(fecha)}</span>` : ''}
-        </div>
-        <div class="notif-acciones">
-          ${!leida ? `<button class="notif-btn-leer" onclick="marcarComoLeida(${notif.id})" title="Marcar como leída">✓</button>` : ''}
-          <button class="notif-btn-eliminar" onclick="eliminarNotificacion(${notif.id})" title="Eliminar">✕</button>
-        </div>
-      </div>
-    `;
-  });
-
-  lista.innerHTML = html;
-}
-
-/* ─────────────────────────────────────────────────
-   ACCIONES (LEER Y ELIMINAR)
-───────────────────────────────────────────────── */
-async function marcarComoLeida(id) {
-  try {
-    // Sincronizado: Laravel suele usar PUT para actualizaciones de estado
-    await http.put('/notifications/' + id + '/read', {});
-
-    listaNotificaciones = listaNotificaciones.map(function(n) {
-      if (n.id === id) return Object.assign({}, n, { leida: true, read: true });
-      return n;
+    document.addEventListener('click', function(event) {
+        if (panelNotif && btnCampana && !panelNotif.contains(event.target) && !btnCampana.contains(event.target)) {
+            panelNotif.classList.remove('active');
+        }
     });
 
-    actualizarBadge();
-    renderizarDropdown();
-  } catch (error) {
-    console.error('Error al marcar notificación:', error);
-  }
-}
+    // INICIAR VIGILANTE DE RECORDATORIOS
+    setInterval(verificarRecordatorios, 30000); 
+});
 
-async function eliminarNotificacion(id) {
-  try {
-    await http.delete('/notifications/' + id);
-    listaNotificaciones = listaNotificaciones.filter(function(n) { return n.id !== id; });
-    actualizarBadge();
-    renderizarDropdown();
-  } catch (error) {
-    console.error('Error al eliminar notificación:', error);
-  }
+function toggleDropdown() {
+    const panelNotif = document.getElementById('notif-panel');
+    if (panelNotif) panelNotif.classList.toggle('active');
 }
 
 /* ─────────────────────────────────────────────────
-   UI HELPERS (DROPDOWN Y POP-UP)
+   SISTEMA DE RECORDATORIOS (10 MIN ANTES)
 ───────────────────────────────────────────────── */
-function toggleDropdown() {
-  var panel = document.getElementById('notif-panel');
-  panel.classList.toggle('active');
+function verificarRecordatorios() {
+    if (!window.listaEventos || window.listaEventos.length === 0) return;
+
+    const ahora = new Date();
+
+    window.listaEventos.forEach(evento => {
+        if (!evento.hora || recordatoriosVistos.has(evento.id)) return;
+
+        const fechaEvento = new Date(`${evento.fecha_inicio}T${evento.hora}`);
+        const diferenciaMs = fechaEvento - ahora;
+        const diferenciaMinutos = Math.floor(diferenciaMs / 1000 / 60);
+
+        // Si faltan exactamente 10 minutos (margen entre 9 y 10)
+        if (diferenciaMinutos >= 9 && diferenciaMinutos <= 10) {
+            lanzarPopupRecordatorio(evento);
+            recordatoriosVistos.add(evento.id);
+        }
+    });
 }
 
-async function verificarNotificacionesLogin() {
-  try {
-    var respuesta = await http.get('/notifications');
-    listaNotificaciones = respuesta.data || respuesta;
+function lanzarPopupRecordatorio(evento) {
+    const popup = document.getElementById('popup-notificaciones');
+    const texto = document.getElementById('popup-texto');
 
-    var noLeidas = listaNotificaciones.filter(n => !n.leida && !n.read);
-    actualizarBadge();
-    renderizarDropdown();
-
-    if (noLeidas.length > 0) {
-      mostrarPopupLogin(noLeidas.length);
+    if (popup && texto) {
+        texto.innerHTML = `<strong>Próximo evento:</strong><br>${evento.titulo} a las ${evento.hora}`;
+        popup.classList.add('active');
+        
+        // Auto-cerrar tras 10 segundos
+        setTimeout(() => {
+            popup.classList.remove('active');
+        }, 10000);
     }
-  } catch (error) {
-    console.error('Error en notificaciones de inicio:', error);
-  }
-}
-
-function mostrarPopupLogin(cantidad) {
-  var popup = document.getElementById('popup-notificaciones');
-  var texto = document.getElementById('popup-texto');
-  if (!popup || !texto) return;
-
-  texto.textContent = `Tienes ${cantidad} notificación${cantidad > 1 ? 'es' : ''} pendiente${cantidad > 1 ? 's' : ''}.`;
-  popup.classList.add('active');
-  setTimeout(() => cerrarPopup(), 5000);
 }
 
 function cerrarPopup() {
-  document.getElementById('popup-notificaciones').classList.remove('active');
+    document.getElementById('popup-notificaciones').classList.remove('active');
 }
 
-// Cerrar dropdown al hacer clic fuera
-document.addEventListener('click', function(e) {
-  var campana = document.getElementById('btn-campana');
-  var panel = document.getElementById('notif-panel');
-  if (campana && panel && !campana.contains(e.target) && !panel.contains(e.target)) {
-    panel.classList.remove('active');
-  }
-});
-
-function escaparHTMLNotif(texto) {
-  var div = document.createElement('div');
-  div.textContent = texto;
-  return div.innerHTML;
+/* ─────────────────────────────────────────────────
+   GESTIÓN DE NOTIFICACIONES (CRUD)
+───────────────────────────────────────────────── */
+async function cargarNotificaciones() {
+    try {
+        const respuesta = await http.get('/notifications');
+        let datos = respuesta.data ? respuesta.data : respuesta;
+        if (datos && datos.data) datos = datos.data;
+        listaNotificaciones = datos || [];
+        renderizarNotificaciones();
+    } catch (error) {
+        console.error('Error al cargar notificaciones:', error);
+    }
 }
 
-function formatearFecha(fechaISO) {
-  try {
-    var fecha = new Date(fechaISO);
-    return fecha.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-  } catch { return fechaISO; }
+function renderizarNotificaciones() {
+    const contenedor = document.getElementById('notif-lista');
+    const badge = document.getElementById('notif-badge');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = '';
+    let noLeidas = 0;
+
+    if (!listaNotificaciones || listaNotificaciones.length === 0) {
+        contenedor.innerHTML = '<p class="notif-empty" style="padding:15px; text-align:center;">No hay notificaciones.</p>';
+        if (badge) badge.style.display = 'none';
+        return;
+    }
+
+    listaNotificaciones.forEach(notif => {
+        if (!notif.leida) noLeidas++;
+
+        const div = document.createElement('div');
+        div.id = `notif-${notif.id}`; 
+        div.className = `notif-item ${notif.leida ? 'leida' : ''}`;
+        
+        div.innerHTML = `
+            <div class="notif-contenido">
+                <p class="notif-mensaje">${notif.mensaje}</p>
+                <span class="notif-fecha">${formatearFecha(notif.created_at)}</span>
+            </div>
+            <div class="notif-acciones">
+                ${!notif.leida ? `<button class="btn-secondary" onclick="marcarComoLeida(${notif.id})" style="padding:4px 8px;">✔</button>` : ''}
+                <button class="btn-danger" onclick="eliminarNotificacion(${notif.id})" style="padding:4px 8px;">✖</button>
+            </div>
+        `;
+        contenedor.appendChild(div);
+    });
+
+    if (badge) {
+        if (noLeidas > 0) {
+            badge.textContent = noLeidas;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
 }
+
+function marcarComoLeida(id) {
+    const elemento = document.getElementById(`notif-${id}`);
+    if (elemento) {
+        elemento.classList.remove('unread');
+        elemento.style.opacity = '0.7';
+        restarCampanita();
+    }
+    http.put('/notifications/' + id + '/read').catch(e => console.error(e));
+}
+
+function eliminarNotificacion(id) {
+    const elemento = document.getElementById(`notif-${id}`);
+    if (elemento) {
+        if (!elemento.classList.contains('leida')) restarCampanita();
+        elemento.style.transform = "translateX(20px)";
+        elemento.style.opacity = "0";
+        setTimeout(() => { elemento.remove(); verificarListaVacia(); }, 200);
+    }
+    http.delete('/notifications/' + id).catch(e => console.error(e));
+}
+
+function restarCampanita() {
+    const badge = document.getElementById('notif-badge');
+    if (!badge) return;
+    let total = parseInt(badge.textContent) || 0;
+    if (total <= 1) { badge.style.display = 'none'; } 
+    else { badge.textContent = total - 1; }
+}
+
+function verificarListaVacia() {
+    const contenedor = document.getElementById('notif-lista');
+    if (contenedor && contenedor.children.length === 0) {
+        contenedor.innerHTML = '<p class="notif-empty" style="padding:15px; text-align:center;">No hay notificaciones.</p>';
+    }
+}
+
+function formatearFecha(fechaString) {
+    if (!fechaString) return '';
+    const f = new Date(fechaString);
+    return f.toLocaleDateString('es-ES', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+setInterval(function() {
+    if (localStorage.getItem('jwt_token')) cargarNotificaciones();
+}, 15000);

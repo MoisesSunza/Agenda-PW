@@ -3,10 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
-use App\Http\Controllers\Api\ReservationController;
-use App\Http\Controllers\Api\SpaceController;
 use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\EventController; // ¡Importación agregada!
+use App\Http\Controllers\Api\EventController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,17 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // 2. Gestión de Eventos (Calendario)
     Route::apiResource('events', EventController::class); 
 
-    // 3. Gestión de Reservas
-    Route::apiResource('reservations', ReservationController::class);
-
     // 4. Notificaciones dentro de la plataforma
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']); // ¡Ruta agregada para el JS!
-    
-    // --- RUTAS DE ADMINISTRADOR (Middleware de roles) ---
-    Route::middleware('admin')->group(function () {
-        // Listar y gestionar espacios disponibles
-        Route::apiResource('spaces', SpaceController::class);
-    });
 });

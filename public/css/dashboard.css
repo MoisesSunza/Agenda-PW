@@ -712,3 +712,9 @@
       .sidebar-logo, .nav-btn span { display: none; }
       .main { margin-left: 60px; padding: 1.5rem; }
     }
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        filter: grayscale(1);
+    }

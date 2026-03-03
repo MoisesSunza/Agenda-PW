@@ -1,98 +1,85 @@
 /**
- * contacts.js - Versión Final Sincronizada
- * CRUD de contactos para Laravel 12.
- * Requiere: auth.js (que ya contiene el objeto http y API_BASE).
+ * contacts.js - Versión Final con Modal de Confirmación
  */
 
-/* ─────────────────────────────────────────────────
-   VARIABLE GLOBAL
-───────────────────────────────────────────────── */
 var listaContactos = [];
+let idContactoAEliminar = null; // Variable puente para el modal
 
 /* ─────────────────────────────────────────────────
-   CARGAR CONTACTOS (GET /api/contacts)
+   1. CARGAR Y RENDERIZAR CONTACTOS
 ───────────────────────────────────────────────── */
 async function cargarContactos() {
-  var tbody = document.getElementById('tabla-contactos');
-  var alerta = document.getElementById('alert-contactos');
-
-  // Estado de carga
-  tbody.innerHTML = '<tr><td colspan="5"><div class="spinner-wrap"><div class="spinner"></div></div></td></tr>';
-  alerta.classList.remove('visible');
-
   try {
-    // El objeto 'http' viene de auth.js y ya incluye el Token Bearer
-    var respuesta = await http.get('/contacts');
+    const respuesta = await http.get('/contacts');
+    let datos = respuesta.data ? respuesta.data : respuesta;
+    if (datos && datos.data) datos = datos.data;
 
-    // Sincronización: Laravel suele envolver colecciones en una llave 'data'
-    listaContactos = respuesta.data || respuesta; 
-
-    renderizarTabla(listaContactos);
-
+    if (!Array.isArray(datos)) {
+        listaContactos = [];
+    } else {
+        listaContactos = datos;
+    }
+    renderizarTablaContactos();
   } catch (error) {
-    alerta.textContent = error.message || 'No se pudieron cargar los contactos.';
-    alerta.classList.add('visible');
-    tbody.innerHTML = '<tr><td colspan="5">Error al cargar datos.</td></tr>';
+    console.error('❌ Error al cargar contactos:', error);
   }
 }
 
-/* ─────────────────────────────────────────────────
-   RENDERIZAR TABLA
-───────────────────────────────────────────────── */
-function renderizarTabla(contactos) {
-  var tbody = document.getElementById('tabla-contactos');
+function renderizarTablaContactos() {
+  const tbody = document.getElementById('tabla-contactos'); 
+  if (!tbody) return;
 
-  if (!contactos || contactos.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>No hay contactos todavía.</p></div></td></tr>';
+  tbody.innerHTML = '';
+
+  if (listaContactos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">No tienes contactos guardados aún.</td></tr>';
     return;
   }
 
-  // Generamos las filas mapeando el arreglo de contactos
-  tbody.innerHTML = contactos.map(function(c) {
-    return `
-      <tr>
-        <td>${escaparHTML(c.nombre || c.name || '')}</td>
-        <td>${escaparHTML(c.correo || c.email || '')}</td>
-        <td>${escaparHTML(c.telefono || c.phone || '—')}</td>
-        <td>${escaparHTML(c.notas || c.notes || '—')}</td>
-        <td>
-          <div class="actions">
-            <button class="btn-secondary" onclick="abrirModalEditar(${c.id})">Editar</button>
-            <button class="btn-danger" onclick="eliminarContacto(${c.id})">Eliminar</button>
-          </div>
-        </td>
-      </tr>
+  listaContactos.forEach(function(contacto) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${contacto.nombre || ''}</td>
+      <td>${contacto.correo || ''}</td>
+      <td>${contacto.telefono || '-'}</td>
+      <td>${contacto.notas || '-'}</td>
+      <td class="actions">
+        <button class="btn-secondary" onclick="prepararEdicionContacto(${contacto.id})">Editar</button>
+        <button class="btn-danger" onclick="eliminarContacto(${contacto.id})">Borrar</button>
+      </td>
     `;
-  }).join('');
+    tbody.appendChild(tr);
+  });
 }
 
 /* ─────────────────────────────────────────────────
-   ABRIR MODAL (CREAR / EDITAR)
+   2. MODALES (CREAR / EDITAR)
 ───────────────────────────────────────────────── */
 function abrirModalCrear() {
   document.getElementById('form-contacto').reset();
   document.getElementById('contacto-id').value = '';
   document.getElementById('modal-titulo').textContent = 'Nuevo contacto';
   document.getElementById('btn-guardar').textContent = 'Guardar';
-  
-  ocultarAlertaModal();
+  ocultarAlertaContacto();
   document.getElementById('modal-overlay').classList.add('active');
 }
 
-function abrirModalEditar(id) {
-  var contacto = listaContactos.find(function(c) { return c.id === id; });
-  if (!contacto) return;
+function prepararEdicionContacto(id) {
+  const contacto = listaContactos.find(c => String(c.id) === String(id));
+  if (contacto) {
+    abrirModalEditarContacto(contacto);
+  }
+}
 
+function abrirModalEditarContacto(contacto) {
   document.getElementById('contacto-id').value = contacto.id;
-  document.getElementById('contacto-nombre').value = contacto.nombre || contacto.name || '';
-  document.getElementById('contacto-correo').value = contacto.correo || contacto.email || '';
-  document.getElementById('contacto-telefono').value = contacto.telefono || contacto.phone || '';
-  document.getElementById('contacto-notas').value = contacto.notas || contacto.notes || '';
-
+  document.getElementById('contacto-nombre').value = contacto.nombre || '';
+  document.getElementById('contacto-correo').value = contacto.correo || '';
+  document.getElementById('contacto-telefono').value = contacto.telefono || '';
+  document.getElementById('contacto-notas').value = contacto.notas || '';
   document.getElementById('modal-titulo').textContent = 'Editar contacto';
   document.getElementById('btn-guardar').textContent = 'Actualizar';
-
-  ocultarAlertaModal();
+  ocultarAlertaContacto();
   document.getElementById('modal-overlay').classList.add('active');
 }
 
@@ -101,88 +88,82 @@ function cerrarModal() {
 }
 
 /* ─────────────────────────────────────────────────
-   GUARDAR (POST o PUT)
+   3. ELIMINAR (CON MODAL PERSONALIZADO)
 ───────────────────────────────────────────────── */
-document.getElementById('form-contacto').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  ocultarAlertaModal();
+function eliminarContacto(id) {
+    idContactoAEliminar = id;
+    document.getElementById('modal-confirmacion-overlay').classList.add('active');
+}
 
-  var id = document.getElementById('contacto-id').value;
-  var datos = {
-    nombre:   document.getElementById('contacto-nombre').value.trim(),
-    correo:   document.getElementById('contacto-correo').value.trim(),
-    telefono: document.getElementById('contacto-telefono').value.trim(),
-    notas:    document.getElementById('contacto-notas').value.trim(),
-  };
+function cerrarModalConfirmacion() {
+    idContactoAEliminar = null;
+    document.getElementById('modal-confirmacion-overlay').classList.remove('active');
+}
 
-  if (!datos.nombre || !datos.correo) {
-    mostrarAlertaModal('Nombre y Correo son obligatorios.');
-    return;
+/* ─────────────────────────────────────────────────
+   4. INICIALIZACIÓN Y EVENTOS
+───────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('form-contacto');
+  if(form) {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      ocultarAlertaContacto();
+      var id = document.getElementById('contacto-id').value;
+      var datos = {
+        nombre: document.getElementById('contacto-nombre').value.trim(),
+        correo: document.getElementById('contacto-correo').value.trim(),
+        telefono: document.getElementById('contacto-telefono').value.trim(),
+        notas: document.getElementById('contacto-notas').value.trim()
+      };
+
+      if (!datos.nombre || !datos.correo) {
+        mostrarAlertaContacto('El nombre y el correo son obligatorios.');
+        return;
+      }
+
+      try {
+        if (id) { await http.put('/contacts/' + id, datos); }
+        else { await http.post('/contacts', datos); }
+        cerrarModal();
+        await cargarContactos();
+        if (typeof cargarNotificaciones === 'function') cargarNotificaciones();
+      } catch (error) {
+        mostrarAlertaContacto(error.message);
+      }
+    });
   }
 
-  var btn = document.getElementById('btn-guardar');
-  btn.disabled = true;
-  btn.textContent = 'Procesando...';
-
-  try {
-    if (id) {
-      await http.put('/contacts/' + id, datos);
-    } else {
-      await http.post('/contacts', datos);
-    }
-    cerrarModal();
-    cargarContactos();
-  } catch (error) {
-    mostrarAlertaModal(error.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = id ? 'Actualizar' : 'Guardar';
+  // Lógica del botón de confirmación en el nuevo modal
+  const btnConfirmar = document.getElementById('btn-confirmar-eliminar');
+  if (btnConfirmar) {
+    btnConfirmar.addEventListener('click', async function() {
+      if (!idContactoAEliminar) return;
+      try {
+        await http.delete('/contacts/' + idContactoAEliminar);
+        cerrarModalConfirmacion();
+        await cargarContactos();
+        if (typeof cargarNotificaciones === 'function') cargarNotificaciones();
+      } catch (error) {
+        console.error('Error al eliminar:', error);
+        cerrarModalConfirmacion();
+      }
+    });
   }
 });
 
 /* ─────────────────────────────────────────────────
-   ELIMINAR
+   5. HELPERS
 ───────────────────────────────────────────────── */
-async function eliminarContacto(id) {
-  if (!confirm('¿Eliminar este contacto?')) return;
-
-  try {
-    await http.delete('/contacts/' + id);
-    cargarContactos();
-  } catch (error) {
-    alert('Error: ' + error.message);
-  }
-}
-
-/* ─────────────────────────────────────────────────
-   BÚSQUEDA LOCAL Y HELPERS
-───────────────────────────────────────────────── */
-function filtrarContactos(textoBusqueda) {
-  var txt = textoBusqueda.toLowerCase();
-  var filtrados = listaContactos.filter(function(c) {
-    return (c.nombre || c.name || '').toLowerCase().includes(txt) || 
-           (c.correo || c.email || '').toLowerCase().includes(txt);
-  });
-  renderizarTabla(filtrados);
-}
-
-function mostrarAlertaModal(msg) {
+function mostrarAlertaContacto(msg) {
   var el = document.getElementById('modal-alert');
-  el.textContent = msg;
-  el.className = 'alert error visible';
+  if(el) {
+    el.textContent = msg;
+    el.className = 'alert error visible';
+  }
 }
 
-function ocultarAlertaModal() {
-  document.getElementById('modal-alert').className = 'alert';
+function ocultarAlertaContacto() {
+  var el = document.getElementById('modal-alert');
+  if(el) { el.className = 'alert'; }
 }
-
-function escaparHTML(texto) {
-  var div = document.createElement('div');
-  div.textContent = texto;
-  return div.innerHTML;
-}
-
-// Cerrar al clickear fuera
-document.getElementById('modal-overlay').addEventListener('click', function(e) {
-  if (e.target === this) cerrarModal();
-});

@@ -261,6 +261,42 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="modal-confirmacion-overlay">
+    <div class="modal" style="max-width: 400px; text-align: center;">
+      <h3 style="font-family: var(--serif); font-size: 1.4rem; margin-bottom: 1rem; color: var(--text);">¿Eliminar contacto?</h3>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem;">Esta acción no se puede deshacer. El contacto será borrado permanentemente de tu agenda.</p>
+      
+      <div class="modal-footer" style="justify-content: center; gap: 1rem;">
+        <button type="button" class="btn-secondary" onclick="cerrarModalConfirmacion()">Cancelar</button>
+        <button type="button" class="btn-danger" id="btn-confirmar-eliminar">Sí, eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-logout-overlay">
+    <div class="modal" style="max-width: 400px; text-align: center;">
+      <h3 style="font-family: var(--serif); font-size: 1.4rem; margin-bottom: 1rem; color: var(--text);">¿Cerrar sesión?</h3>
+      <p id="logout-mensaje" style="color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem;">¿Estás seguro de que deseas salir de tu agenda?</p>
+      
+      <div class="modal-footer" style="justify-content: center; gap: 1rem;">
+        <button type="button" class="btn-secondary" id="btn-logout-cancelar" onclick="cerrarModalLogout()">Cancelar</button>
+        <button type="button" class="btn-danger" id="btn-logout-confirmar" onclick="ejecutarLogout()">Sí, salir</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-confirmar-evento-overlay">
+  <div class="modal" style="max-width: 400px; text-align: center;">
+    <h3 style="font-family: var(--serif); font-size: 1.4rem; margin-bottom: 1rem; color: var(--text);">¿Eliminar evento?</h3>
+    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem;">¿Estás seguro de que quieres borrar este evento? Esta acción no se puede deshacer.</p>
+    
+    <div class="modal-footer" style="justify-content: center; gap: 1rem;">
+      <button type="button" class="btn-secondary" onclick="cerrarModalConfirmarEvento()">Cancelar</button>
+      <button type="button" class="btn-danger" id="btn-confirmar-eliminar-evento">Confirmar eliminación</button>
+    </div>
+  </div>
+</div>
+
   <!-- ══════════════════════════════════════════
        SCRIPTS — el orden importa:
        1. config.js  → define API_BASE
