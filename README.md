@@ -1,59 +1,113 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MiAgenda — Ecosistema de Gestión de Productividad y Notificaciones
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Proyecto Académico de Programación Web | Universidad Autónoma de Campeche (UAC) | Facultad de Ingeniería (FDI)**
 
-## About Laravel
+[![Laravel](https://img.shields.io/badge/Framework-Laravel%2012-FF2D20?logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php)](https://www.php.net/)
+[![JS](https://img.shields.io/badge/Frontend-Vanilla%20JS-F7DF1E?logo=javascript)](https://developer.mozilla.org/es/docs/Web/JavaScript)
+[![MySQL](https://img.shields.io/badge/DB-MySQL-4479A1?logo=mysql)](https://www.mysql.com/)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Autores
+* **Moisés Abraham Sunza Vázquez**
+* **Fernando Adriano Sabido Quijano**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Maestro
+* **Juan Antonio Chuc Méndez
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Resumen del Proyecto
+**MiAgenda** es una solución integral diseñada para la administración centralizada de contactos y la planificación estratégica de eventos. El sistema implementa una arquitectura robusta basada en **Laravel 12**, enfocándose en la automatización de procesos mediante un motor de notificaciones dual que opera tanto en el cliente (navegador) como en el servidor (tareas programadas).
 
-## Laravel Sponsors
+El proyecto destaca por su interfaz de alto contraste y su enfoque en la **Experiencia de Usuario (UX)**, utilizando patrones de diseño modernos como **Optimistic UI** para garantizar una respuesta instantánea a las interacciones del usuario.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Funcionalidades Principales
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 1. Gestión Avanzada de Contactos
+* **CRUD Completo:** Administración total de registros con validación de datos en el servidor (Server-side validation).
+* **Confirmación de Acciones:** Despacho de correos electrónicos profesionales al registrar, actualizar o eliminar contactos.
 
-## Contributing
+### 2. Planificación de Eventos y Calendario
+* **FullCalendar Integration:** Interfaz dinámica para la gestión de agendas temporales.
+* **Lógica de Continuidad:** Soporte nativo para eventos que cruzan la medianoche, asegurando una visualización coherente en la rejilla mensual.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Sistema de Notificaciones de Proximidad (10 min)
+* **Vigilante en Frontend:** Script de monitoreo constante que dispara popups visuales 10 minutos antes del inicio de una actividad.
+* **Automatización Artisan:** Comando de consola personalizado (`app:send-event-reminders`) que busca eventos próximos y envía recordatorios vía SMTP de forma autónoma.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Stack Tecnológico
 
-## Security Vulnerabilities
+| Capa | Tecnología | Función |
+| :--- | :--- | :--- |
+| **Backend** | Laravel 12 (PHP 8.4) | Motor de lógica, API RESTful y Task Scheduling. |
+| **Frontend** | JavaScript ES6+ / CSS3 | Reactividad del DOM y gestión de peticiones asíncronas. |
+| **Base de Datos** | MySQL | Almacenamiento persistente y relaciones de integridad. |
+| **Infraestructura** | Laravel Herd / PHP Artisan | Entorno de ejecución y automatización de tareas. |
+| **Diseño** | Beyond Gardens Theme | Estética personalizada en modo oscuro y dorado metálico. |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Arquitectura Técnica
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Arquitectura de Datos (Eloquent ORM)
+El sistema utiliza un esquema de base de datos relacional donde la entidad `User` posee relaciones de tipo **One-to-Many (`HasMany`)** con `Contact`, `Event` y `Notification`. Esto garantiza un aislamiento total de los datos por sesión de usuario.
+
+
+
+### Flujo de Notificaciones Automáticas
+El sistema de recordatorios de 10 minutos opera mediante el **Task Scheduler** de Laravel. Un comando programado realiza consultas de proximidad temporal cada 60 segundos, disparando eventos de correo electrónico mediante Mailables personalizados.
+
+
+
+---
+
+## Identidad Visual y UX
+Bajo el concepto de diseño **"Beyond Gardens"**, se ha priorizado la legibilidad y la elegancia técnica:
+* **Paleta:** Fondos en `#0d0d0f` con tipografía y acentos en `#c8a96e`.
+* **Optimistic UI:** Las notificaciones se marcan como leídas o se eliminan visualmente en el instante en que el usuario hace clic, sincronizándose con el servidor en segundo plano para eliminar la percepción de latencia.
+
+
+
+---
+
+## Instalación y Configuración
+
+1.  **Clonación del repositorio:**
+    ```bash
+    git clone [https://github.com/moises-sunza/mi-agenda.git](https://github.com/moises-sunza/mi-agenda.git)
+    cd mi-agenda
+    ```
+2.  **Instalación de dependencias:**
+    ```bash
+    composer install
+    ```
+3.  **Variables de Entorno:**
+    * Configurar el archivo `.env` con las credenciales de base de datos y SMTP.
+    * Importante: Configurar `TIMEZONE=America/Merida` para la precisión de los recordatorios.
+4.  **Migración de esquemas:**
+    ```bash
+    php artisan migrate
+    ```
+5.  **Ejecución del Programador:**
+    ```bash
+    php artisan schedule:work
+    ```
+
+---
+
+## Créditos y Autoría
+Proyecto desarrollado como parte de la formación académica en la **Facultad de Ingeniería de la Universidad Autónoma de Campeche (UAC)**.
+
+* **Desarrollo Backend & Backend Logic:** Moisés Abraham Sunza Vázquez.
+* **UI/UX Design & Mailing Architecture:** Fernando Adriano Sabido Quijano.
+
+---
+**© 2026 MiAgenda Team — Todos los derechos reservados.**
