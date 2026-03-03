@@ -16,7 +16,7 @@
 ---
 
 ## Maestro
-* **Juan Antonio Chuc Méndez
+* **Juan Antonio Chuc Méndez**
 
 ---
 
