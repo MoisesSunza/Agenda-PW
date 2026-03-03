@@ -271,13 +271,12 @@
        6. dashboard.js → navegación (va al final para
           que todo lo anterior ya esté disponible)
   ══════════════════════════════════════════ -->
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/contacts.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/contacts.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/index.global.min.js"></script>
-  <script src="js/calendar.js"></script>
-  <script src="js/notifications.js"></script>
-  <script src="js/dashboard.js"></script>
+  <script src="/js/calendar.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/dashboard.js"></script>
 
 </body>
 </html>

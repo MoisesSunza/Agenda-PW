@@ -131,14 +131,13 @@
   </main>
 
   <!-- ── Scripts: config primero, auth segundo, lógica de página al final ── -->
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="/js/auth.js"></script>
   <script>
     /* ═══════════════════════════════════════════════
        Redirige si ya hay sesión activa
     ═══════════════════════════════════════════════ */
     if (Auth.isAuthenticated()) {
-      window.location.href = 'dashboard.html';
+      window.location.href = 'dashboard';
     }
 
     /* ═══════════════════════════════════════════════
@@ -213,7 +212,7 @@
         document.getElementById('token-display').classList.add('visible');
         showAlert('login-alert', '¡Bienvenido! Redirigiendo…', 'success');
 
-        setTimeout(() => window.location.href = 'dashboard.html', 1200);
+        setTimeout(() => window.location.href = 'dashboard', 1200);
 
       } catch (err) {
         showAlert('login-alert', err.message || 'Credenciales incorrectas.');
@@ -257,7 +256,7 @@
       try {
         await register(nameInput.value.trim(), emailInput.value.trim(), passInput.value);
         showAlert('register-alert', 'Cuenta creada. ¡Bienvenido!', 'success');
-        setTimeout(() => window.location.href = 'dashboard.html', 1200);
+        setTimeout(() => window.location.href = 'dashboard', 1200);
       } catch (err) {
         showAlert('register-alert', err.message || 'No se pudo crear la cuenta.');
       } finally {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\SpaceController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\EventController; // ¡Importación agregada!
 
 /*
 |--------------------------------------------------------------------------
@@ -18,24 +19,26 @@ use App\Http\Controllers\Api\NotificationController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-
 // --- RUTAS PROTEGIDAS (Requieren inicio de sesión) ---
 Route::middleware('auth:sanctum')->group(function () {
     
     // Cerrar sesión
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // 1. Gestión de Contactos (CRUD completo: index, store, show, update, destroy)
+    // 1. Gestión de Contactos (CRUD completo)
     Route::apiResource('contacts', ContactController::class);
 
-    // 2. Gestión de Eventos y Reservas
-    // Incluye visualización en calendario y validación de horarios
+    // 2. Gestión de Eventos (Calendario)
+    Route::apiResource('events', EventController::class); 
+
+    // 3. Gestión de Reservas
     Route::apiResource('reservations', ReservationController::class);
 
-    // 3. Notificaciones dentro de la plataforma
+    // 4. Notificaciones dentro de la plataforma
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']); // ¡Ruta agregada para el JS!
+    
     // --- RUTAS DE ADMINISTRADOR (Middleware de roles) ---
     Route::middleware('admin')->group(function () {
         // Listar y gestionar espacios disponibles
