@@ -8,29 +8,33 @@ use App\Http\Controllers\Api\EventController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes - Proyecto Agenda Electrónica
+| API Routes - Proyecto MiAgenda (Moisés & Fernando)
 |--------------------------------------------------------------------------
+| Base URL: http://localhost:8000/api [cite: 195]
 */
 
 // --- RUTAS PÚBLICAS ---
-// Registro e inicio de sesión para obtener el token
+// Registro e inicio de sesión [cite: 197, 208]
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// --- RUTAS PROTEGIDAS (Requieren inicio de sesión) ---
+// --- RUTAS PROTEGIDAS (Requieren Token Bearer) [cite: 196] ---
 Route::middleware('auth:sanctum')->group(function () {
     
-    // Cerrar sesión
+    // Perfil del usuario autenticado 
+    Route::get('/user', [AuthController::class, 'me']); 
+
+    // Cerrar sesión [cite: 224]
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // 1. Gestión de Contactos (CRUD completo)
+    // 1. Gestión de Contactos (CRUD: index, store, show, update, destroy) [cite: 241, 249]
     Route::apiResource('contacts', ContactController::class);
 
-    // 2. Gestión de Eventos (Calendario)
+    // 2. Gestión de Eventos (Calendario y Recordatorios) [cite: 271, 284]
     Route::apiResource('events', EventController::class); 
 
-    // 4. Notificaciones dentro de la plataforma
+    // 3. Centro de Notificaciones (Logica de Optimistic UI)
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']); // ¡Ruta agregada para el JS!
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 });

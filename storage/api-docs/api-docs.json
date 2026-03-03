@@ -1,35 +1,118 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "API Agenda Electrónica",
-        "description": "Documentación oficial para el proyecto de Ingeniería de Software UAC.",
+        "title": "API MiAgenda - Proyecto UAC",
+        "description": "Documentación técnica de la API para gestión de contactos y eventos.",
+        "contact": {
+            "name": "Moisés Abraham Sunza Vázquez & Fernando Adriano Sabido Quijano",
+            "email": "moises.sunza@uac.mx"
+        },
         "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "http://localhost:8000/api"
+            "url": "http://localhost:8000/api",
+            "description": "Servidor de Desarrollo Local"
         }
     ],
     "paths": {
+        "/register": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Registrar un nuevo usuario",
+                "operationId": "5d4fa5d5607ed675ba93907e1fc94534",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Juan Pérez"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "juan@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario registrado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|abc123..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "tags": [
                     "Autenticación"
                 ],
-                "summary": "Inicio de sesión de usuario",
-                "operationId": "78f0a66c9e72b510991be2d41660da95",
+                "summary": "Iniciar sesión",
+                "operationId": "67d6d0fdd54fba132e1b6f55ca254183",
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
                                 "properties": {
                                     "email": {
                                         "type": "string",
-                                        "example": "test@agenda.com"
+                                        "format": "email",
+                                        "example": "juan@example.com"
                                     },
                                     "password": {
                                         "type": "string",
-                                        "example": "password"
+                                        "format": "password",
+                                        "example": "password123"
                                     }
                                 },
                                 "type": "object"
@@ -39,12 +122,93 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login exitoso"
+                        "description": "Login exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|abc123..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Credenciales inválidas"
                     }
                 }
+            }
+        },
+        "/user": {
+            "get": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Obtener datos del usuario autenticado",
+                "operationId": "70b03e2a769112c3f7fec363191faeca",
+                "responses": {
+                    "200": {
+                        "description": "Datos del usuario",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado (token inválido o ausente)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Cerrar sesión",
+                "operationId": "28d48c13fca984400ac8de99f54ee13a",
+                "responses": {
+                    "200": {
+                        "description": "Sesión cerrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully logged out"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/contacts": {
@@ -345,7 +509,55 @@
             }
         }
     },
+    "components": {
+        "schemas": {
+            "User": {
+                "title": "Usuario",
+                "description": "Esquema del modelo de usuario para el sistema MiAgenda",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Moisés Sunza"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "moises@uac.mx"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
     "tags": [
+        {
+            "name": "Autenticación",
+            "description": "Registro e inicio de sesión de usuarios"
+        },
         {
             "name": "Contactos",
             "description": "Operaciones para la libreta de direcciones"
@@ -357,10 +569,6 @@
         {
             "name": "Notificaciones",
             "description": "Centro de alertas del sistema"
-        },
-        {
-            "name": "Autenticación",
-            "description": "Autenticación"
         }
     ]
 }
